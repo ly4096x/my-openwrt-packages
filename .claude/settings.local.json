@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jj status:*)",
+      "WebFetch",
+      "WebSearch",
+      "Bash(jj log:*)",
+      "Bash(jj file list:*)",
+      "Bash(jj bookmark set:*)",
+      "Bash(jj git push:*)",
+      "Bash(jj show:*)",
+      "Bash(jj new:*)",
+      "Bash(jj describe:*)",
+      "Bash(jj commit:*)",
+      "Bash(tmux capture-pane:*)"
+    ]
+  },
+  "outputStyle": "default"
+}

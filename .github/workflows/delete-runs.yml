@@ -1,0 +1,41 @@
+name: Cleanup Workflow Runs and Cache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  delete-runs:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      deployments: write
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 0
+
+      - name: Delete all caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching list of caches..."
+          gh cache delete --all --repo "$GITHUB_REPOSITORY" || echo "Failed to delete caches (or none found)"
+          echo "Cache cleanup complete."
+
+      - name: Delete old deployments
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching list of deployments..."
+          # Deployments are returned sorted by created_at desc (newest first)
+          # We skip the first one (tail -n +2) and delete the rest
+          gh api "repos/$GITHUB_REPOSITORY/deployments" --paginate --jq '.[].id' | tail -n +2 | while read -r dep_id; do
+            echo "Deleting deployment ID: $dep_id"
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/deployments/$dep_id" || echo "Failed to delete deployment $dep_id"
+          done
+          echo "Deployment cleanup complete."
