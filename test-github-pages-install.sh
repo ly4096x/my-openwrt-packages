@@ -36,7 +36,7 @@ wget -q https://ly4096x.github.io/my-openwrt-packages/ly4096x-keyring.ipk
 opkg install ly4096x-keyring.ipk 2>&1
 
 echo "Step 2: Installing feed package..."
-wget -q https://ly4096x.github.io/my-openwrt-packages/24.10/packages/x86_64/ly4096x-packages-feeds_20250103-r1_all.ipk -O ly4096x-packages-feeds.ipk
+wget -q https://ly4096x.github.io/my-openwrt-packages/24.10/packages/x86_64/ly4096x-packages-feeds.ipk
 opkg install ly4096x-packages-feeds.ipk 2>&1
 
 echo "Step 3: Updating package list..."
@@ -83,7 +83,7 @@ wget -q https://ly4096x.github.io/my-openwrt-packages/ly4096x-keyring.apk
 apk add --allow-untrusted ly4096x-keyring.apk 2>&1
 
 echo "Step 2: Installing feed package..."
-wget -q https://ly4096x.github.io/my-openwrt-packages/25.12/packages/x86_64/ly4096x-packages-feeds-20250103-r1.apk -O ly4096x-packages-feeds.apk
+wget -q https://ly4096x.github.io/my-openwrt-packages/25.12/packages/x86_64/ly4096x-packages-feeds.apk
 apk add --allow-untrusted ly4096x-packages-feeds.apk 2>&1
 
 echo "Step 3: Updating package list..."
@@ -136,7 +136,7 @@ wget -q https://ly4096x.github.io/my-openwrt-packages/ly4096x-keyring.apk
 apk add --allow-untrusted ly4096x-keyring.apk 2>&1
 
 echo "Step 2: Installing feed package..."
-wget -q https://ly4096x.github.io/my-openwrt-packages/SNAPSHOT/packages/x86_64/ly4096x-packages-feeds-20250103-r1.apk -O ly4096x-packages-feeds.apk
+wget -q https://ly4096x.github.io/my-openwrt-packages/SNAPSHOT/packages/x86_64/ly4096x-packages-feeds.apk
 apk add --allow-untrusted ly4096x-packages-feeds.apk 2>&1
 
 echo "Step 3: Updating package list..."
@@ -167,8 +167,8 @@ wget -q https://ly4096x.github.io/my-openwrt-packages/ly4096x-keyring.ipk
 opkg install ly4096x-keyring.ipk 2>&1
 
 echo "Step 2: Check if SNAPSHOT IPK packages exist..."
-if wget -q --spider https://ly4096x.github.io/my-openwrt-packages/SNAPSHOT/packages/x86_64/ly4096x-packages-feeds_20250103-r1_all.ipk; then
-    wget -q https://ly4096x.github.io/my-openwrt-packages/SNAPSHOT/packages/x86_64/ly4096x-packages-feeds_20250103-r1_all.ipk -O ly4096x-packages-feeds.ipk
+if wget -q --spider https://ly4096x.github.io/my-openwrt-packages/SNAPSHOT/packages/x86_64/ly4096x-packages-feeds.ipk; then
+    wget -q https://ly4096x.github.io/my-openwrt-packages/SNAPSHOT/packages/x86_64/ly4096x-packages-feeds.ipk
     opkg install ly4096x-packages-feeds.ipk 2>&1
     opkg update 2>&1
     opkg install fish 2>&1

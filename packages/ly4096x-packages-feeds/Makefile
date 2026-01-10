@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ly4096x-packages-feeds
-PKG_VERSION:=20250103
+PKG_VERSION:=20250110
 PKG_RELEASE:=1
 PKG_MAINTAINER:=ly4096x
 
@@ -40,7 +40,8 @@ if [ -f /etc/os-release ]; then
 	if [ "$$VERSION_ID" = "snapshot" ]; then
 		FEED_VERSION="SNAPSHOT"
 	else
-		FEED_VERSION="$${VERSION_ID}"
+		# Remove -snapshot suffix from stable releases (24.10-snapshot -> 24.10)
+		FEED_VERSION="$${VERSION_ID%-snapshot}"
 	fi
 
 	# Get architecture
