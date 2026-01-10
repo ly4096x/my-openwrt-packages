@@ -176,6 +176,40 @@ jobs:
             echo "Linked $latest_feeds_apk to ly4096x-packages-feeds.apk"
           fi
 
+          # Create symlinks in each version/arch directory for ease of use
+          # This allows URLs like: /24.10/packages/x86_64/ly4096x-packages-feeds.ipk
+          for dir in */packages/*/; do
+            if [ -d "$dir" ]; then
+              cd "$dir"
+
+              # Create symlink for keyring package (remove version from filename)
+              for pkg in ly4096x-keyring_*.ipk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" ly4096x-keyring.ipk
+              done
+              for pkg in ly4096x-keyring-*.apk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" ly4096x-keyring.apk
+              done
+
+              # Create symlink for feeds package (remove version from filename)
+              for pkg in ly4096x-packages-feeds_*.ipk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" ly4096x-packages-feeds.ipk
+              done
+              for pkg in ly4096x-packages-feeds-*.apk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" ly4096x-packages-feeds.apk
+              done
+
+              # Create symlink for fish package (remove version from filename)
+              for pkg in fish_*.ipk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" fish.ipk
+              done
+              for pkg in fish-*.apk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" fish.apk
+              done
+
+              cd - > /dev/null
+            fi
+          done
+
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
