@@ -147,20 +147,18 @@ jobs:
         run: |
           # Create root-level convenience links for easy installation
           # Use find to locate the latest packages in the flattened structure
-          
+
           # Keyring packages
           latest_keyring_ipk=$(find . -name "ly4096x-keyring_*.ipk" -type f | sort | tail -1)
           latest_keyring_apk=$(find . -name "ly4096x-keyring-*.apk" -type f | sort | tail -1)
-          
+
           if [ -n "$latest_keyring_ipk" ]; then
             ln -sf "$latest_keyring_ipk" ly4096x-keyring.ipk
-            cp "$latest_keyring_ipk" keyring.ipk
             echo "Linked $latest_keyring_ipk to ly4096x-keyring.ipk and copied to keyring.ipk"
           fi
-          
+
           if [ -n "$latest_keyring_apk" ]; then
             ln -sf "$latest_keyring_apk" ly4096x-keyring.apk
-            cp "$latest_keyring_apk" keyring.apk
             echo "Linked $latest_keyring_apk to ly4096x-keyring.apk and copied to keyring.apk"
           fi
 
