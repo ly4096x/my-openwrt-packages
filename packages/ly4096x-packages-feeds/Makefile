@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ly4096x-packages-feeds
 PKG_VERSION:=20250110
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_MAINTAINER:=ly4096x
 
 include $(INCLUDE_DIR)/package.mk
@@ -22,12 +22,8 @@ define Build/Compile
 endef
 
 define Package/ly4096x-packages-feeds/install
-	$(INSTALL_DIR) $(1)/etc/opkg/distfeeds.d
-	$(INSTALL_DIR) $(1)/etc/apk/repositories.d
-	$(INSTALL_DIR) $(1)/usr/lib/opkg/info
-
-	# Create post-install script that will set the correct feed URL at install time
-	$(INSTALL_BIN) ./files/postinst $(1)/usr/lib/opkg/info/ly4096x-packages-feeds.postinst || true
+	# Package install creates the postinst script automatically
+	# No files need to be installed, everything is done in postinst
 endef
 
 define Package/ly4096x-packages-feeds/postinst
@@ -47,11 +43,12 @@ if [ -f /etc/os-release ]; then
 	# Get architecture
 	FEED_ARCH="$${OPENWRT_ARCH:-x86_64}"
 
-	# Create OPKG feed configuration
-	echo "src/gz ly4096x_packages https://ly4096x.github.io/my-openwrt-packages/$$FEED_VERSION/packages/$$FEED_ARCH" > /etc/opkg/distfeeds.d/ly4096x.conf
+	# Create OPKG feed configuration (append to customfeeds.conf)
+	echo "src/gz ly4096x_packages https://ly4096x.github.io/my-openwrt-packages/$$FEED_VERSION/packages/$$FEED_ARCH" >> /etc/opkg/customfeeds.conf
 
-	# Create APK repository configuration
-	echo "https://ly4096x.github.io/my-openwrt-packages/$$FEED_VERSION/packages/$$FEED_ARCH" > /etc/apk/repositories.d/ly4096x.list
+	# Create APK repository configuration (APK automatically appends /<arch>/)
+	mkdir -p /etc/apk/repositories.d
+	echo "https://ly4096x.github.io/my-openwrt-packages/$$FEED_VERSION/packages" > /etc/apk/repositories.d/ly4096x.list
 
 	echo "Configured ly4096x package feed for OpenWrt $$FEED_VERSION ($$FEED_ARCH)"
 fi
