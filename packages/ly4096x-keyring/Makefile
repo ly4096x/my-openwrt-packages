@@ -23,9 +23,9 @@ endef
 
 define Package/ly4096x-keyring/install
 	$(INSTALL_DIR) $(1)/etc/opkg/keys
-	$(INSTALL_DATA) ./files/ly4096x-package-key.pub $(1)/etc/opkg/keys/
+	$(INSTALL_DATA) ./files/key.pub $(1)/etc/opkg/keys/712bfbad30870c38
 	$(INSTALL_DIR) $(1)/etc/apk/keys
-	$(INSTALL_DATA) ./files/ly4096x-package-key.pub $(1)/etc/apk/keys/
+	$(INSTALL_DATA) ./files/key.pub $(1)/etc/apk/keys/712bfbad30870c38
 endef
 
 $(eval $(call BuildPackage,ly4096x-keyring))
