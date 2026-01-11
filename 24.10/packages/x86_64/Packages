@@ -1,0 +1,35 @@
+Package: fish
+Version: 4.3.2-r1
+Depends: libc
+License: GPL-3
+Section: utils
+URL: https://fishshell.com/
+Architecture: x86_64
+Installed-Size: 17868800
+Filename: fish_4.3.2-r1_x86_64.ipk
+Size: 4729724
+SHA256sum: e439671d00cf4882aa3622651c37f6eb4d2d27509d0ec0494ef38c4818dd657c
+Description:  Fish is a smart and user-friendly command line shell.
+
+Package: ly4096x-keyring
+Version: 1.0-r1
+Depends: libc
+Section: base
+Architecture: all
+Installed-Size: 10240
+Filename: ly4096x-keyring_1.0-r1_all.ipk
+Size: 1031
+SHA256sum: 5287327a9cac637304bc000dffa87d875e02eb60c0e0d9dd669f71c5e9ed3e32
+Description:  The public key for ly4096x's package feed.
+
+Package: ly4096x-packages-feeds
+Version: 1.0-r2
+Depends: libc
+Section: base
+Architecture: all
+Installed-Size: 10240
+Filename: ly4096x-packages-feeds_1.0-r2_all.ipk
+Size: 1248
+SHA256sum: 8d3edc272622b1b1d338ab8a4cc1ac1e1e3564e9736fd837cbd319d0c82f1610
+Description:  Feeds configuration for ly4096x's packages.
+
