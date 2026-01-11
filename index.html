@@ -1,0 +1,43 @@
+---
+layout: base
+---
+
+{{ content }}
+
+<h1 id="path"></h1>
+<table style="width:100%">
+  <tr>
+    <th>Name</th>
+  </tr>
+
+<!-- ref: <github.com/bryango/resources> start -->
+{%- for res in site.pages -%}
+
+  {%- assign checkStart = res.url | split: '/assets/' -%}
+  {%- if checkStart[0] == '' -%}
+    {%- continue -%}
+  {%- endif -%}
+
+  {%- assign checkStart = res.url | split: page.url -%}
+  {%- if checkStart[0] != '' -%}
+    {%- continue -%}
+  {%- endif -%}
+
+  {%- assign target = res.url | remove_first: page.url -%}
+  {%- if target contains '/' -%}
+    {%- assign folder_new = target | split: '/' | first -%}
+  {%- else -%}
+    {%- continue -%}
+  {%- endif -%}
+
+  {%- if folder_new != folder -%}
+    {%- assign folder = folder_new -%}
+    <tr>
+      <td><a class="post-link" href="{{ folder | append: '/' }}" >{{ folder | append: '/' }}</a></td>
+    </tr>
+  {%- endif -%}
+
+{% endfor %}
+<!-- ref: <github.com/bryango/resources> end -->
+
+</table>

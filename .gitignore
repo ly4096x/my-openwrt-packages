@@ -1,0 +1,5 @@
+.vscode/
+.claude/
+
+.temp/
+_site/*
