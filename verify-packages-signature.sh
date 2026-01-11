@@ -25,7 +25,7 @@ if [ ! -d "${ARTIFACTS_DIR}/packages" ]; then
 fi
 
 # Check if public key exists
-if [ ! -f "packages/ly4096x-keyring/files/ly4096x-package-key.pub" ]; then
+if [ ! -f "packages/ly4096x-keyring/files/key.pub" ]; then
   echo "ERROR: Public key not found"
   exit 1
 fi
@@ -48,7 +48,7 @@ if [ -n "$PACKAGES_ADB" ]; then
 
   # Run verification in Docker with apk tools
   docker run --rm \
-    -v "$PWD/packages/ly4096x-keyring/files/ly4096x-package-key.pub:/etc/apk/keys/ly4096x-package-key.pub:ro" \
+    -v "$PWD/packages/ly4096x-keyring/files/key.pub:/etc/apk/keys/712bfbad30870c38:ro" \
     -v "${PACKAGES_DIR}:/packages:ro" \
     openwrt/rootfs:x86_64-SNAPSHOT \
     sh -c "
@@ -95,7 +95,7 @@ elif [ -n "$PACKAGES_SIG" ]; then
   echo ""
 
   docker run --rm \
-    -v "$PWD/packages/ly4096x-keyring/files/ly4096x-package-key.pub:/key.pub:ro" \
+    -v "$PWD/packages/ly4096x-keyring/files/key.pub:/key.pub:ro" \
     -v "${PACKAGES_DIR}:/packages:ro" \
     openwrt/rootfs:x86_64-SNAPSHOT \
     sh -c "
