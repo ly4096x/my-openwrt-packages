@@ -1,0 +1,1 @@
+{"specVersion":"1.4","version":1,"metadata":{"timestamp":"2026-09-27T07:22:02Z"},"components":[{"licenses":[{"license":{"name":"GPL-3"}}],"type":"application","name":"fish","version":"4.3.3","cpe":"cpe:/a:fishshell:fish:4.3.3"},{"name":"ly4096x-keyring","type":"application","version":"1.0"}],"serialNumber":"urn:uuid:8442978d-7fa7-40c4-b78e-09e46e3591fb","bomFormat":"CycloneDX"}

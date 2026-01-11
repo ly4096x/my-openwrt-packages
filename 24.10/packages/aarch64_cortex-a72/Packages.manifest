@@ -1,0 +1,37 @@
+Package: fish
+Version: 4.3.3-r1
+Depends: libc, libpcre2, libpcre2-32
+Source: /feed/fish
+SourceName: fish
+License: GPL-3
+LicenseFiles: COPYING
+Section: utils
+SourceDateEpoch: 1790455847
+URL: https://fishshell.com
+CPE-ID: cpe:/a:fishshell:fish
+Maintainer: ly4096x
+Architecture: aarch64_cortex-a72
+Installed-Size: 33495040
+Filename: fish_4.3.3-r1_aarch64_cortex-a72.ipk
+Size: 9656092
+SHA256sum: eda0593911a29574055c781f03f055df789e08b39e2facad35377d6774492f9b
+Description:  Fish is a smart and user-friendly command line shell for OS X, Linux, and the
+ rest of the family. Fish includes features like syntax highlighting,
+ autosuggest-as-you-type, and fancy tab completions that just work, with no
+ configuration required.
+
+Package: ly4096x-keyring
+Version: 1.0-r1
+Depends: libc
+Source: /feed/ly4096x-keyring
+SourceName: ly4096x-keyring
+Section: base
+SourceDateEpoch: 1790455847
+Maintainer: ly4096x
+Architecture: all
+Installed-Size: 10240
+Filename: ly4096x-keyring_1.0-r1_all.ipk
+Size: 1024
+SHA256sum: fe14a82f6f8f456448e413fc98a43e068b0a923cb007919950324a1efceb8628
+Description:  The public key for ly4096x's package feed.
+
