@@ -223,3 +223,12 @@ jobs:
           else
             echo "No changes to commit"
           fi
+
+  pages-deploy:
+    needs: deploy
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    uses: ly4096x/my-openwrt-packages/.github/workflows/jekyll.yml@gh-pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
