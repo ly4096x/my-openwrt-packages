@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ly4096x-packages-feeds
-PKG_VERSION:=20250110
+PKG_VERSION:=1.0
 PKG_RELEASE:=2
 PKG_MAINTAINER:=ly4096x
 
