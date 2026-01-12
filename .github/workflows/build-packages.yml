@@ -8,6 +8,7 @@ on:
       - 'packages/**'
       - '.github/workflows/**'
       - '*.sh'
+  pull_request:
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * 0'  # Weekly Sunday 2 AM UTC
