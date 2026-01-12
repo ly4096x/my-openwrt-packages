@@ -1,0 +1,215 @@
+name: Build Packages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/**'
+      - '.github/workflows/**'
+      - '*.sh'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly Sunday 2 AM UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - openwrt-24.10
+          - openwrt-25.12
+          - SNAPSHOT
+        arch:
+          - aarch64_cortex-a53
+          - aarch64_cortex-a72
+          - x86_64
+
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Packages with Docker
+        env:
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ matrix.version }}
+          KEY_BUILD: ${{ secrets.OPENWRT_USIGN_KEY }}
+        run: |
+          # Use build-packages.sh for consistent build process
+          # This ensures local and CI builds are identical
+          chmod +x build-packages.sh
+          ./build-packages.sh
+
+          # Move artifacts to expected location for upload
+          mkdir -p ${{ github.workspace }}/bin/packages/${{ matrix.arch }}/localbuilt
+          if [ -d ".temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages" ]; then
+            cp -r .temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages/${{ matrix.arch }}/localbuilt/* \
+                  ${{ github.workspace }}/bin/packages/${{ matrix.arch }}/localbuilt/ || true
+          fi
+
+      - name: Verify Fish Package Works
+        if: matrix.arch == 'x86_64'
+        env:
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ matrix.version }}
+        run: |
+          # Use verify-fish-can-run-on-openwrt-rootfs.sh for consistent verification
+          # Only test x86_64 (native architecture in GitHub Actions)
+          chmod +x verify-fish-can-run-on-openwrt-rootfs.sh
+
+          # Check if fish package was built
+          if [ ! -d ".temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages" ]; then
+            echo "Warning: Artifacts directory not found, skipping verification"
+            exit 0
+          fi
+
+          if ! find .temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages -name "fish*.apk" -o -name "fish*.ipk" | grep -q .; then
+            echo "Warning: Fish package not found, skipping verification"
+            exit 0
+          fi
+
+          ./verify-fish-can-run-on-openwrt-rootfs.sh
+
+      - name: Verify Package Signatures
+        env:
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ matrix.version }}
+          KEY_BUILD: ${{ secrets.OPENWRT_USIGN_KEY }}
+        if: env.KEY_BUILD != ''
+        run: |
+          # Verify that packages were properly signed
+          chmod +x verify-packages-signature.sh
+          ./verify-packages-signature.sh
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.version }}-${{ matrix.arch }}
+          path: |
+            bin/packages/${{ matrix.arch }}/localbuilt/
+            .temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages/${{ matrix.arch }}/localbuilt/
+          if-no-files-found: warn
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 3
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Reorganize packages
+        run: |
+          # Create directory structure: VERSION/packages/ARCH/
+          for artifact_dir in artifacts/packages-*; do
+            # Extract version and arch from directory name
+            basename=$(basename "$artifact_dir")
+            rest=${basename#packages-}
+            arch=$(echo "$rest" | grep -oE '[a-z0-9]+_[a-z0-9-]+$')
+            version=${rest%-$arch}
+            version=${version#openwrt-}
+
+            # Remove old releases
+            rm -rf "$version/"
+
+            # Create target directory
+            target_dir="${version}/packages/${arch}"
+            mkdir -p "$target_dir"
+
+            # Flatten the structure: copy from the deep localbuilt directory
+            # The artifact contains: bin/packages/${arch}/localbuilt/*
+            find "$artifact_dir" -name "*.ipk" -o -name "*.apk" -o -name "Packages*" -o -name "packages.adb" -o -name "index.json" | xargs -I{} cp {} "$target_dir/"
+          done
+
+          # Remove artifacts directory
+          rm -rf artifacts/
+
+      - name: Create convenience links
+        run: |
+          # Create root-level convenience links for easy installation
+          # Use find to locate the latest packages in the flattened structure
+
+          # Keyring packages
+          latest_keyring_ipk=$(find . -name "ly4096x-keyring_*.ipk" -type f | sort | tail -1)
+          latest_keyring_apk=$(find . -name "ly4096x-keyring-*.apk" -type f | sort | tail -1)
+
+          if [ -n "$latest_keyring_ipk" ]; then
+            ln -sf "$latest_keyring_ipk" ly4096x-keyring.ipk
+            echo "Linked $latest_keyring_ipk to ly4096x-keyring.ipk"
+          fi
+
+          if [ -n "$latest_keyring_apk" ]; then
+            ln -sf "$latest_keyring_apk" ly4096x-keyring.apk
+            echo "Linked $latest_keyring_apk to ly4096x-keyring.apk"
+          fi
+
+          # Create symlinks in each version/arch directory for ease of use
+          # This allows URLs like: /24.10/packages/x86_64/ly4096x-keyring.ipk
+          for dir in */packages/*/; do
+            if [ -d "$dir" ]; then
+              cd "$dir"
+
+              # Create symlink for keyring package (remove version from filename)
+              for pkg in ly4096x-keyring_*.ipk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" ly4096x-keyring.ipk
+              done
+              for pkg in ly4096x-keyring-*.apk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" ly4096x-keyring.apk
+              done
+
+              # Create symlink for fish package (remove version from filename)
+              for pkg in fish_*.ipk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" fish.ipk
+              done
+              for pkg in fish-*.apk; do
+                [ -f "$pkg" ] && ln -sf "$pkg" fish.apk
+              done
+
+              cd - > /dev/null
+            fi
+          done
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+
+          # Only commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit --amend -m "Update packages from ${{ github.sha }}"
+            git push --force-with-lease
+          else
+            echo "No changes to commit"
+          fi
+
+  pages-deploy:
+    needs: deploy
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    uses: ly4096x/my-openwrt-packages/.github/workflows/jekyll.yml@gh-pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
