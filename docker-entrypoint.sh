@@ -107,36 +107,6 @@ if ! rustup target add "$RUST_TARGET"; then
 fi
 echo "Rust target added: $RUST_TARGET"
 
-# Install gettext if msgfmt is not available (required for Fish localization)
-if ! command -v msgfmt &> /dev/null; then
-  echo "Installing gettext for message catalog support..."
-  if command -v apt-get &> /dev/null; then
-    if ! apt-get update; then
-      echo "WARNING: Failed to update apt package lists"
-    fi
-    if ! apt-get install -y gettext; then
-      echo "WARNING: Failed to install gettext via apt-get"
-    fi
-  elif command -v apk &> /dev/null; then
-    if ! apk add --no-cache gettext; then
-      echo "WARNING: Failed to install gettext via apk"
-    fi
-  elif command -v opkg &> /dev/null; then
-    if ! opkg update || ! opkg install gettext-full; then
-      echo "WARNING: Failed to install gettext via opkg"
-    fi
-  else
-    echo "WARNING: Could not install gettext - package manager not found"
-  fi
-  if command -v msgfmt &> /dev/null; then
-    echo "Gettext installed: $(msgfmt --version | head -1)"
-  else
-    echo "WARNING: msgfmt still not available after installation attempt"
-  fi
-else
-  echo "Gettext already available: $(msgfmt --version | head -1)"
-fi
-
 # Export Rust PATH for CMake to find
 export PATH="$HOME/.cargo/bin:$PATH"
 export CARGO_HOME="$HOME/.cargo"

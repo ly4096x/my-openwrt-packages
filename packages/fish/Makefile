@@ -1,21 +1,31 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=fish
-PKG_VERSION:=4.3.2
+PKG_VERSION:=4.3.3
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://github.com/fish-shell/fish-shell/releases/download/$(PKG_VERSION)
-PKG_HASH:=36a09cfc7fc2d1f1d0b6f5caf3828998621721f8c60a7a31ec55679286a9fe1c
+PKG_HASH:=eba0e7d325c1d46046bb9d29434e7e0dabf7f584eb156845005d688e10b86e57
 
 PKG_MAINTAINER:=ly4096x
 PKG_LICENSE:=GPL-3
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:fishshell:fish
 
+PKG_BUILD_DEPENDS:=rust/host pcre2
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
+
+# Disable static linking for pcre2-sys
+export PCRE2_SYS_STATIC=0
+
+# For pcre2-sys
+export CC=$(TARGET_CC)
+export RUSTFLAGS+=-C target-feature=-crt-static
+export CARGO_TARGET_$(shell echo $(RUSTC_TARGET_ARCH) | sed -e 'y/abcdefghijklmnopqrstuvwxyz-/ABCDEFGHIJKLMNOPQRSTUVWXYZ_/')_LINKER:=$(TARGET_CC)
 
 # Determine Rust target based on OpenWrt architecture
 ifeq ($(ARCH),x86_64)
@@ -37,14 +47,13 @@ endif
 # CMake configuration for Rust-based Fish 4.x
 CMAKE_OPTIONS += \
 	-DWITH_DOCS=OFF \
-	-DRust_CARGO_TARGET=$(RUST_TARGET)
+	-DWITH_GETTEXT=OFF \
+	-DRust_CARGO_TARGET=$(RUST_TARGET) \
+	-DFISH_USE_SYSTEM_PCRE2=ON
 
 # Cargo environment for cross-compilation
 TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include
 TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib
-
-# Ensure msgfmt is available in PATH during build (for fish-gettext-maps)
-export PATH:=$(STAGING_DIR_HOST)/bin:$(PATH)
 
 define Build/Configure
 	mkdir -p $(PKG_BUILD_DIR)/.cargo
@@ -58,22 +67,47 @@ endef
 define Package/fish
   SECTION:=utils
   CATEGORY:=Utilities
-  TITLE:=Fish shell
-  URL:=https://fishshell.com/
-  DEPENDS:=
+  SUBMENU:=Shells
+  TITLE:=A smart and user-friendly command line shell
+  DEPENDS:=$(RUST_ARCH_DEPENDS) +libpcre2 +libpcre2-32
+  URL:=https://fishshell.com
 endef
 
 define Package/fish/description
-  Fish is a smart and user-friendly command line shell.
+  Fish is a smart and user-friendly command line shell for OS X, Linux, and the
+  rest of the family. Fish includes features like syntax highlighting,
+  autosuggest-as-you-type, and fancy tab completions that just work, with no
+  configuration required.
+endef
+
+define Package/fish/conffiles
+/usr/etc/fish/config.fish
 endef
 
 define Package/fish/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/fish $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/fish $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/fish_indent $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/fish_key_reader $(1)/usr/bin
+
 	$(INSTALL_DIR) $(1)/usr/share/fish
 	$(CP) $(PKG_INSTALL_DIR)/usr/share/fish/* $(1)/usr/share/fish/
-	$(INSTALL_DIR) $(1)/etc/profile.d
-	$(INSTALL_DATA) ./files/fish.sh $(1)/etc/profile.d/
+	rm -rf $(1)/usr/share/fish/man
+endef
+
+define Package/fish/postinst
+#!/bin/sh
+grep fish $${IPKG_INSTROOT}/etc/shells || \
+    echo "/usr/bin/fish" >> $${IPKG_INSTROOT}/etc/shells
+
+# Backwards compatibility
+if [ -e /bin/fish ] && { [ ! -L /bin/fish ] || [ "$(readlink -fn $${IPKG_INSTROOT}/bin/fish)" != "../$(CONFIGURE_PREFIX)/bin/fish" ]; }; then
+    ln -fs "../$(CONFIGURE_PREFIX)/bin/fish" "$${IPKG_INSTROOT}/bin/fish"
+fi
+endef
+
+define Package/fish/postrm
+	rm -rf "$${IPKG_INSTROOT}/$(CONFIGURE_PREFIX)/share/fish/$(PKG_VERSION)"
 endef
 
 $(eval $(call BuildPackage,fish))
