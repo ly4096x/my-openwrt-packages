@@ -115,6 +115,8 @@ jobs:
 
       - name: Reorganize packages
         run: |
+          rm -rf 24.10/ 25.12/ SNAPSHOT/
+
           # Create directory structure: VERSION/packages/ARCH/
           for artifact_dir in artifacts/packages--*; do
             basename=$(basename "$artifact_dir")
@@ -126,9 +128,6 @@ jobs:
             version=${rest%--*}
             # Cleanup Version: remove 'openwrt-' prefix if it exists
             version=${version#openwrt-}
-
-            # Remove old releases
-            rm -rf "$version/"
 
             # Create target directory
             target_dir="${version}/packages/${arch}"
