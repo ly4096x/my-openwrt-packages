@@ -52,13 +52,6 @@ jobs:
           chmod +x build-packages.sh
           ./build-packages.sh
 
-          # Move artifacts to expected location for upload
-          mkdir -p ${{ github.workspace }}/bin/packages/${{ matrix.arch }}/localbuilt
-          if [ -d ".temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages" ]; then
-            cp -r .temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages/${{ matrix.arch }}/localbuilt/* \
-                  ${{ github.workspace }}/bin/packages/${{ matrix.arch }}/localbuilt/ || true
-          fi
-
       - name: Verify Fish Package Works
         if: matrix.arch == 'x86_64'
         env:
@@ -70,12 +63,12 @@ jobs:
           chmod +x verify-fish-can-run-on-openwrt-rootfs.sh
 
           # Check if fish package was built
-          if [ ! -d ".temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages" ]; then
+          if [ ! -d ".temp/artifacts/${{ matrix.arch }}/${{ matrix.version }}/packages" ]; then
             echo "Warning: Artifacts directory not found, skipping verification"
             exit 0
           fi
 
-          if ! find .temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages -name "fish*.apk" -o -name "fish*.ipk" | grep -q .; then
+          if ! find .temp/artifacts/${{ matrix.arch }}/${{ matrix.version }}/packages -name "fish*.apk" -o -name "fish*.ipk" | grep -q .; then
             echo "Warning: Fish package not found, skipping verification"
             exit 0
           fi
@@ -96,10 +89,9 @@ jobs:
       - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.version }}-${{ matrix.arch }}
+          name: packages--${{ matrix.version }}--${{ matrix.arch }}
           path: |
-            bin/packages/${{ matrix.arch }}/localbuilt/
-            .temp/artifacts-${{ matrix.arch }}-${{ matrix.version }}/packages/${{ matrix.arch }}/localbuilt/
+            .temp/artifacts/${{ matrix.arch }}/${{ matrix.version }}/packages/${{ matrix.arch }}/localbuilt/
           if-no-files-found: warn
 
   deploy:
@@ -124,12 +116,15 @@ jobs:
       - name: Reorganize packages
         run: |
           # Create directory structure: VERSION/packages/ARCH/
-          for artifact_dir in artifacts/packages-*; do
-            # Extract version and arch from directory name
+          for artifact_dir in artifacts/packages--*; do
             basename=$(basename "$artifact_dir")
-            rest=${basename#packages-}
-            arch=$(echo "$rest" | grep -oE '[a-z0-9]+_[a-z0-9-]+$')
-            version=${rest%-$arch}
+            # Remove the leading 'packages--'
+            rest=${basename#packages--}
+            # Extract Arch: take everything after the LAST double dash
+            arch=${rest##*--}
+            # Extract Version: take everything before the LAST double dash
+            version=${rest%--*}
+            # Cleanup Version: remove 'openwrt-' prefix if it exists
             version=${version#openwrt-}
 
             # Remove old releases

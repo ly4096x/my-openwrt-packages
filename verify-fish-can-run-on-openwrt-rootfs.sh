@@ -25,8 +25,8 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-BUILD_NAME="${ARCH}-${VERSION}"
-ARTIFACTS_DIR=".temp/artifacts-${BUILD_NAME}"
+BUILD_NAME="${ARCH}/${VERSION}"
+ARTIFACTS_DIR=".temp/artifacts/${BUILD_NAME}"
 
 echo "========================================="
 echo "Verifying Fish Package: ${BUILD_NAME}"

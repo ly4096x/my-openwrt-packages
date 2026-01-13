@@ -63,7 +63,7 @@ echo "Docker image: ${DOCKER_IMAGE}"
 echo
 
 # Create temp directories for this specific build
-ARTIFACTS_DIR="${PWD}/.temp/artifacts-${ARCH}-${VERSION}"
+ARTIFACTS_DIR="${PWD}/.temp/artifacts/${ARCH}/${VERSION}"
 mkdir -p "${ARTIFACTS_DIR}"
 
 # Container name for easy management

@@ -80,7 +80,7 @@ PACKAGES="ly4096x-keyring fish" ARCH=x86_64 VERSION=SNAPSHOT ./build-packages.sh
 ```
 
 **Build artifacts:**
-- Built packages: `.temp/artifacts-{ARCH}-{VERSION}/packages/`
+- Built packages: `.temp/artifacts/{ARCH}/{VERSION}/packages/`
 
 **Requirements:**
 - Docker installed and running

@@ -7,7 +7,7 @@ set -e
 
 ARCH="${ARCH:-x86_64}"
 VERSION="${VERSION:-SNAPSHOT}"
-ARTIFACTS_DIR=".temp/artifacts-${ARCH}-${VERSION}"
+ARTIFACTS_DIR=".temp/artifacts/${ARCH}/${VERSION}"
 
 echo "========================================="
 echo "Verifying Package Signatures"
