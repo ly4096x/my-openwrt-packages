@@ -75,6 +75,22 @@ jobs:
 
           ./verify-fish-can-run-on-openwrt-rootfs.sh
 
+      - name: Verify All Packages Work
+        if: matrix.arch == 'x86_64'
+        env:
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ matrix.version }}
+        run: |
+          chmod +x verify-packages.sh
+
+          # Check if artifacts directory exists
+          if [ ! -d ".temp/artifacts/${{ matrix.arch }}/${{ matrix.version }}/packages" ]; then
+            echo "Warning: Artifacts directory not found, skipping verification"
+            exit 0
+          fi
+
+          ./verify-packages.sh
+
       - name: Verify Package Signatures
         env:
           ARCH: ${{ matrix.arch }}
