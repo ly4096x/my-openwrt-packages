@@ -112,7 +112,15 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export CARGO_HOME="$HOME/.cargo"
 export RUSTUP_HOME="$HOME/.rustup"
 
-# Add custom feed
+# Add custom feed, keeping defaults
+if [ -f feeds.conf.default ]; then
+  sed -e 's|https://git.openwrt.org/openwrt/openwrt.git|https://github.com/openwrt/openwrt.git|g' \
+      -e 's|https://git.openwrt.org/feed/packages.git|https://github.com/openwrt/packages.git|g' \
+      -e 's|https://git.openwrt.org/project/luci.git|https://github.com/openwrt/luci.git|g' \
+      -e 's|https://git.openwrt.org/feed/routing.git|https://github.com/openwrt/routing.git|g' \
+      -e 's|https://git.openwrt.org/feed/telephony.git|https://github.com/openwrt/telephony.git|g' \
+      feeds.conf.default > feeds.conf
+fi
 echo "src-link ${FEEDNAME} /feed" >> feeds.conf
 
 # Show feed configuration
@@ -121,7 +129,7 @@ cat feeds.conf
 
 # Update feeds
 echo "Updating feeds..."
-if ! ./scripts/feeds update -a; then
+if ! ./scripts/feeds update base packages; then
   echo "ERROR: Failed to update feeds"
   exit 1
 fi
@@ -129,6 +137,8 @@ fi
 # Install packages from custom feed
 if [ -n "$PACKAGES" ]; then
   echo "Installing packages: $PACKAGES"
+  # First update the custom feed to be sure
+  ./scripts/feeds update "${FEEDNAME}"
   for pkg in $PACKAGES; do
     if ! ./scripts/feeds install -p "${FEEDNAME}" "$pkg"; then
       echo "ERROR: Failed to install package: $pkg"
