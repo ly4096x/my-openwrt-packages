@@ -19,7 +19,7 @@ wget https://ly4096x.github.io/my-openwrt-packages/ly4096x-keyring.ipk
 opkg install ly4096x-keyring.ipk
 
 # For APK (OpenWrt 25.12 and newer)
-wget https://ly4096x.github.io/my-openwrt-packages/ly4096x-keyring.apk
+wget https://ly4096x.github.io/my-openwrt-packages/25.12/packages/aarch64_cortex-a53/ly4096x-keyring.apk
 apk add --allow-untrusted ly4096x-keyring.apk
 ```
 
@@ -35,7 +35,7 @@ opkg update
 
 **APK (OpenWrt 25.12 and newer):**
 ```sh
-echo "https://ly4096x.github.io/my-openwrt-packages/25.12/packages/aarch64_cortex-a53" >> /etc/apk/repositories.d/ly4096x.list
+echo "https://ly4096x.github.io/my-openwrt-packages/25.12/packages/aarch64_cortex-a53/packages.adb" >> /etc/apk/repositories.d/ly4096x.list
 apk update
 ```
 
